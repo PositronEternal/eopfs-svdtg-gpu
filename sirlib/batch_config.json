@@ -1,0 +1,15 @@
+{
+    "root_path": "/mnt/data/processedsequences",
+    "save_path": null,
+    "sequences": [
+        {"name": "Car4", "start_frame": 0, "end_frame": -1}, 
+        {"name": "CarScale", "start_frame": 0, "end_frame": -1}
+    ],
+    "particle_counts": [300],
+    "score_types": ["ASV", "ASVHO"],
+    "filter_modes": ["AUX"],
+    "update_intervals": [20],
+    "update_methods": ["SCORE"],
+    "historical_lengths": [10],
+    "number_runs": 3
+}
