@@ -31,16 +31,21 @@ class SIRTracker(QRunnable):
         self._video = None
         self._result_file = None
         self.signals = SIRTrackerSignals()
-        if self.job_options['save_path'] is not None:
-            self.init_results(job_options)
-            self.signals.frame_changed.connect(self.on_frame_change)
-            self.signals.finished.connect(self.on_finished)
 
-    def init_results(self, job_options):
+    def init_results(self):
         """ initialize memory and file save path for results """
         result_path = path.join(
             self.job_options['save_path'],
-            self.job_options['name'])
+            self.job_options['name'],
+            (str(self.job_options['start_frame']) +
+                '_' + str(self.job_options['end_frame'])),
+            'pc_' + str(self.job_options['particle_count']),
+            self.job_options['score_type'],
+            self.job_options['filter_mode'],
+            'ui_' + str(self.job_options['update_interval']),
+            self.job_options['update_method'],
+            'hl_' + str(self.job_options['historical_length'])
+        )
 
         if not path.exists(result_path):
             makedirs(result_path)
@@ -51,7 +56,7 @@ class SIRTracker(QRunnable):
         )
 
         self.results = {
-            'job_options': job_options,
+            'job_options': self.job_options,
             'frame_number': [],
             'estimate': [],
             'error': [],
@@ -73,6 +78,15 @@ class SIRTracker(QRunnable):
     def run(self):
         """ main execution method for tracker """
 
+        self.signals.status_changed.emit(
+            self.job_options['job_id'], 'Loading sequence')
+        self.load_sequence()
+
+        if self.job_options['save_path'] is not None:
+            self.init_results()
+            self.signals.frame_changed.connect(self.on_frame_change)
+            self.signals.finished.connect(self.on_finished)
+
         # skip if result for job exists
         if self._result_file is not None and \
                 path.exists(self._result_file):
@@ -82,9 +96,6 @@ class SIRTracker(QRunnable):
             self.signals.finished.emit(self.job_options['job_id'])
             return
 
-        self.signals.status_changed.emit(
-            self.job_options['job_id'], 'Loading sequence')
-        self.load_sequence()
         self.signals.status_changed.emit(
             self.job_options['job_id'], 'Generating Graph')
         self.load_graph()
