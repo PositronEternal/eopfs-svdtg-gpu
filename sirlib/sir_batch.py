@@ -104,7 +104,7 @@ class BatchWindow(QMainWindow, BATCH_WIDGET):
         # attach run ids, seed, and tracker objects
         for index, r in enumerate(self.runs):
             r['job_options']['job_id'] = index
-            r['job_options']['seed'] = index
+            r['job_options']['seed'] = r['job_options']['run']
             r['tracker'] = SIRTracker(r['job_options'])
             r['tracker'].signals.status_changed.connect(self.on_status_change)
 
@@ -189,10 +189,7 @@ class BatchWindow(QMainWindow, BATCH_WIDGET):
     def on_tv_runs_clicked(self, index):
         """ list selection changed """
         row_idx = index.row()
-
-        if self.viewer_index is None:
-            self.viewer.show()
-
+        self.viewer.show()
         self.viewer_index = row_idx
         self.viewer.attach_tracker(self.runs[row_idx]['tracker'])
 
