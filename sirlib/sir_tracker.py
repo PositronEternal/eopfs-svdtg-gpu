@@ -1,10 +1,11 @@
 """ sir particle filter target tracker """
-from os import path
+from os import path, makedirs
+import json
 import gc
 import numpy as np
 import tensorflow as tf
 # pylint: disable=E0611
-from PyQt5.QtCore import QObject, QRunnable, pyqtSignal
+from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout
 import time
 from sir_graph import SIRGraph
@@ -25,23 +26,62 @@ class SIRTracker(QRunnable):
             job_options):
         super(SIRTracker, self).__init__()
         self.job_options = job_options
-        self._paused = False
+        self.paused = False
         self._graph = None
         self._video = None
+        self._result_file = None
         self.signals = SIRTrackerSignals()
+        if self.job_options['save_path'] is not None:
+            self.init_results(job_options)
+            self.signals.frame_changed.connect(self.on_frame_change)
+            self.signals.finished.connect(self.on_finished)
+
+    def init_results(self, job_options):
+        """ initialize memory and file save path for results """
+        result_path = path.join(
+            self.job_options['save_path'],
+            self.job_options['name'])
+
+        if not path.exists(result_path):
+            makedirs(result_path)
+
+        self._result_file = path.join(
+            result_path,
+            'results_' + str(self.job_options['run']) + '.json',
+        )
+
+        self.results = {
+            'job_options': job_options,
+            'frame_number': [],
+            'estimate': [],
+            'error': [],
+            'neff': [],
+            'template_updated': []
+        }
 
     def do_pause(self):
         """ pause/unpause thread """
-        if not self._paused:
-            self._paused = True
+        if not self.paused:
+            self.paused = True
             self.signals.status_changed.emit(
                 self.job_options['job_id'], 'Paused')
         else:
-            self._paused = False
+            self.paused = False
             self.signals.status_changed.emit(
                 self.job_options['job_id'], 'Running')
 
     def run(self):
+        """ main execution method for tracker """
+
+        # skip if result for job exists
+        if self._result_file is not None and \
+                path.exists(self._result_file):
+            self.signals.status_changed.emit(
+                self.job_options['job_id'],
+                'Skipped')
+            self.signals.finished.emit(self.job_options['job_id'])
+            return
+
         self.signals.status_changed.emit(
             self.job_options['job_id'], 'Loading sequence')
         self.load_sequence()
@@ -66,7 +106,7 @@ class SIRTracker(QRunnable):
             for frame_num in range(
                     self.job_options['start_frame'],
                     self.job_options['end_frame']):
-                while self._paused:
+                while self.paused:
                     pass
 
                 gtc = self._video.get_gt_center(frame_num)
@@ -94,6 +134,7 @@ class SIRTracker(QRunnable):
                 do_update = \
                     self.job_options['update_interval'] > 0 and \
                     frame_num % self.job_options['update_interval'] == 0
+                frame_details['template_updated'] = do_update
 
                 self._graph.maintain_template(sess, do_update)
                 if do_update or frame_num == 0:
@@ -152,6 +193,20 @@ class SIRTracker(QRunnable):
 
         self._graph = SIRGraph(sir_options, video_options, template_options)
         return sir_options, video_options, template_options
+
+    def on_frame_change(self, frame_details):
+        """ save results to memory """
+        self.results['frame_number'].append(frame_details['frame_number'])
+        self.results['estimate'].append(frame_details['estimate'].tolist())
+        self.results['error'].append(frame_details['error'].tolist())
+        self.results['neff'].append(frame_details['neff'].tolist())
+        self.results['template_updated'].append(
+            frame_details['template_updated'])
+
+    def on_finished(self):
+        """ save results """
+        with open(self._result_file, 'w') as f:
+            json.dump(self.results, f)
 
     #  The filters, these are the SIR tracking algorithm routinesfunctions
     #  that utilize the tensorflow graph
@@ -216,7 +271,6 @@ class SIRWindow(QMainWindow):
 
     def closeEvent(self, *args, **kwargs):
         self.closing = True
-        self.threadpool.waitForDone()
 
     def attach_tracker(self, tracker):
         self.tracker = tracker
@@ -244,14 +298,15 @@ if __name__ == '__main__':
         'root_path': '/mnt/data/processedsequences',
         'name': 'Car4',
         'start_frame': 0,
-        'end_frame': -1,
-        "save_path": None,  # "/mnt/data/results",
+        'end_frame': 25,
+        "save_path": None,  # '/mnt/data/results',
         "particle_count": 300,
         "score_type": 'ASVHO',
         "filter_mode": 'AUX',
         "update_interval": 20,
         "update_method": 'SCORE',
-        "historical_length": 10
+        "historical_length": 10,
+        "run": 0
     }
     worker1 = SIRTracker(job_options1)
     SIRWINDOW.attach_tracker(worker1)
