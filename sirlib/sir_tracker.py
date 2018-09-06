@@ -90,6 +90,7 @@ class SIRTracker(QRunnable):
         # skip if result for job exists
         if self._result_file is not None and \
                 path.exists(self._result_file):
+            self._video = None
             self.signals.status_changed.emit(
                 self.job_options['job_id'],
                 'Skipped')
@@ -162,6 +163,7 @@ class SIRTracker(QRunnable):
                 self.signals.frame_changed.emit(frame_details)
 
         self._graph = None
+        self._video = None
         # force garbage collect to remove unused tensorflow graphs
         gc.collect()
         self.signals.status_changed.emit(
