@@ -1,5 +1,5 @@
 """ sir particle filter target tracker """
-from os import path, makedirs
+from os import path, makedirs, environ
 import json
 import gc
 import numpy as np
@@ -11,6 +11,8 @@ import time
 from sir_graph import SIRGraph
 from mcvideo import MCVideo
 from sir_view import SIRView
+
+environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 class SIRTrackerSignals(QObject):
