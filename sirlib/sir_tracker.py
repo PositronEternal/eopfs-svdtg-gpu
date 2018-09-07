@@ -91,6 +91,8 @@ class SIRTracker(QRunnable):
         if self._result_file is not None and \
                 path.exists(self._result_file):
             self._video = None
+            # prevent overwriting existing results
+            self.signals.finished.disconnect(self.on_finished)
             self.signals.status_changed.emit(
                 self.job_options['job_id'],
                 'Skipped')
