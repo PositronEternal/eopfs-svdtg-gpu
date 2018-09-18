@@ -1,15 +1,34 @@
 {
     "root_path": "/mnt/data/processedsequences",
-    "save_path": null,
+    "save_path": "/mnt/data/results",
     "sequences": [
-        {"name": "Car4", "start_frame": 0, "end_frame": -1}, 
-        {"name": "CarScale", "start_frame": 0, "end_frame": -1}
+        {"name": "bc1_case3", "start_frame": 0, "end_frame": -1},
+        {"name": "bc3_case7", "start_frame": 0, "end_frame": -1},
+        {"name": "Car4", "start_frame": 0, "end_frame": -1},
+        {"name": "CarScale", "start_frame": 0, "end_frame": -1},
+        {"name": "Coke", "start_frame": 0, "end_frame": -1},
+        {"name": "Crossing", "start_frame": 0, "end_frame": -1},
+        {"name": "Dudek", "start_frame": 0, "end_frame": -1},
+        {"name": "Football", "start_frame": 0, "end_frame": -1},
+        {"name": "Girl", "start_frame": 0, "end_frame": -1},
+        {"name": "RedTeam", "start_frame": 0, "end_frame": -1},
+        {"name": "rng14_15", "start_frame": 0, "end_frame": -1},
+        {"name": "rng16_18", "start_frame": 0, "end_frame": -1},
+        {"name": "rng18_16", "start_frame": 0, "end_frame": -1},
+        {"name": "rng19_06", "start_frame": 0, "end_frame": -1},
+        {"name": "rng19_13", "start_frame": 0, "end_frame": -1},
+        {"name": "rng19_NS", "start_frame": 0, "end_frame": -1},
+        {"name": "Skater", "start_frame": 0, "end_frame": -1},
+        {"name": "Skater2", "start_frame": 0, "end_frame": -1},
+        {"name": "vision", "start_frame": 0, "end_frame": -1},
+        {"name": "walking", "start_frame": 0, "end_frame": -1},
+        {"name": "woman", "start_frame": 0, "end_frame": -1}
     ],
     "particle_counts": [300],
-    "score_types": ["ASV", "ASVHO"],
-    "filter_modes": ["AUX"],
-    "update_intervals": [20],
-    "update_methods": ["SCORE"],
-    "historical_lengths": [10],
-    "number_runs": 3
+    "score_types": ["NCC", "ASV", "ASVHO"],
+    "filter_modes": ["RESAMPLE", "AUX"],
+    "update_intervals": [10, 20],
+    "update_methods": ["SCORE", "SCORE_SVD"],
+    "historical_lengths": [10, 20, 30],
+    "number_runs": 10
 }
