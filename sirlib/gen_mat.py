@@ -73,6 +73,12 @@ for job in runs:
 
     with open(result_path, 'r') as r_file:
         job_result = json.load(r_file)
+        job_options = job_result.pop('job_options', None)
+        job_result.update(job_options)
+        job_result['ground_truth'] = g_t
+        job_result['height'] = height
+        job_result['width'] = width
+        job_result['length'] = length
 
     # save result into memory structure
     results.append(job_result)
