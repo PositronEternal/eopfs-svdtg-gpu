@@ -74,6 +74,10 @@ class MCVideo(object):
         """get ground-truth center by frame_number"""
         return self.g_t[[1, 0], frame_num]
 
+    def get_gt(self, frame_num):
+        """get ground-truth and template half-width and half-height"""
+        return self.g_t[[1, 0, 3, 2], frame_num]
+
     def get_gt_ulhc(self, frame_num):
         """get upper-left-hand corner of ground-truth"""
         return (self.g_t[0, frame_num] - self.g_t[2, frame_num],

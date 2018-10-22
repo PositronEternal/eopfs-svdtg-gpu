@@ -33,6 +33,8 @@ class SIRTracker(QRunnable):
         self._video = None
         self._result_file = None
         self.signals = SIRTrackerSignals()
+        self.template_width = None
+        self.template_height = None
 
     def init_results(self):
         """ initialize memory and file save path for results """
@@ -155,6 +157,8 @@ class SIRTracker(QRunnable):
                 self._graph.maintain_template(sess, do_update)
                 if do_update or frame_num == 0:
                     extracted_template = sess.run(self._graph.template)
+                    self.template_height = extracted_template.shape[0]
+                    self.template_width = extracted_template.shape[1]
                     self.signals.template_changed.emit(extracted_template)
 
                 filter_fn(sess)
@@ -163,6 +167,7 @@ class SIRTracker(QRunnable):
                 frame_details['error'] = \
                     np_estimate[0:2] - [gtc[0], gtc[1]]
                 frame_details['neff'] = sess.run(self._graph.neff)
+                frame_details['gt'] = self._video.get_gt(frame_num)
 
                 self.signals.frame_changed.emit(frame_details)
 
@@ -315,7 +320,7 @@ if __name__ == '__main__':
         'root_path': '/mnt/data/processedsequences',
         'name': 'Car4',
         'start_frame': 0,
-        'end_frame': 25,
+        'end_frame': -1,
         "save_path": None,  # '/mnt/data/results',
         "particle_count": 300,
         "score_type": 'ASVHO',

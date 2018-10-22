@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QImage, QPixmap
 import numpy as np
 from cv2 import (
-    circle, cvtColor,
+    circle, cvtColor, polylines,
     COLOR_GRAY2BGR, COLOR_GRAY2RGB, COLOR_BGR2RGB)
 
 CREATOR_FILE = 'sirlib/sir_view.ui'
@@ -34,7 +34,18 @@ class SIRView(QWidget, SIR_VIEW):
         # plot over frame and display
         colorized = cvtColor(frame_details['frame'], COLOR_GRAY2BGR)
         if not np.any(np.isnan(estimate)):
-            circle(colorized, (estimate[1], estimate[0]), 5, [0, 0, 255])
+            # template half-width half-height
+            hh = self.tracker.template_height/2.0
+            hw = self.tracker.template_width/2.0
+            blue = (255, 0, 0)
+            yellow = (0, 255, 255)
+
+            gt = np.array(frame_details['gt'], dtype=np.float32)
+            self.plot_X_box([gt[0], gt[1], 0, 0, 1.0, 0],
+                            gt[3], gt[2], colorized, blue)
+            circle(colorized, (gt[1], gt[0]), 5, blue)
+            self.plot_X_box(estimate, hw, hh, colorized, yellow)
+            circle(colorized, (estimate[1], estimate[0]), 5, yellow)
         colorized = cvtColor(colorized, COLOR_BGR2RGB)
         qt_stride = int(colorized.nbytes/colorized.shape[0])
         qt_image = QImage(colorized.data, colorized.shape[1],
@@ -55,6 +66,40 @@ class SIRView(QWidget, SIR_VIEW):
             f"Neff: {frame_details['neff']}"
         )
         self.lbl_frame_details.setText(frame_details)
+
+    def plot_X_box(self, X, hw, hh, colorized, color):
+        # transform and translate estimate
+        tm = X[0]
+        tn = X[1]
+        m = X[4]
+        c = np.cos(X[5])
+        s = np.sin(X[5])
+        est_pts = np.array(
+            [
+                [
+                    # upper-left (-hh,-hw)
+                    m*(-hw*c - hh*s) + tn,
+                    m*(hw*s - hh*c) + tm
+                ],
+                [
+                    # upper-right (-hh,hw)
+                    m*(-hw*c + hh*s) + tn,
+                    m*(hw*s + hh*c) + tm
+                ],
+                [
+                    # lower-right (hh,hw)
+                    m*(hw*c + hh*s) + tn,
+                    m*(-hw*s + hh*c) + tm
+                ],
+                [
+                    # lower-left
+                    m*(hw*c - hh*s) + tn,
+                    m*(-hw*s - hh*c) + tm
+                ]
+            ], np.int32)
+
+        est_pts = est_pts.reshape((-1, 1, 2))
+        polylines(colorized, [est_pts], isClosed=True, thickness=2, color=color)
 
     @pyqtSlot(object)
     def change_template(self, extracted_template):
