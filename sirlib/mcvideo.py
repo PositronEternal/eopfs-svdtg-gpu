@@ -17,12 +17,8 @@ class MCVideo(object):
         self.pix_read_size = self.width*self.height * 8
         self.mod_read_size = self.width*self.height*self.n_channels*8
 
-        self.mod_file = open(mod_path, 'rb')
-
     def __del__(self):
         pass
-        # self.pix_file.close()
-        # self.mod_file.close()
 
     def load_gt(self, gt_path):
         """ load ground truth """

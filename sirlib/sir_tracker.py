@@ -171,6 +171,9 @@ class SIRTracker(QRunnable):
 
                 self.signals.frame_changed.emit(frame_details)
 
+                # create tensorboard graphs
+                # writer = tf.summary.FileWriter('./graphs', sess.graph)
+
         self._graph = None
         self._video = None
         # force garbage collect to remove unused tensorflow graphs
@@ -326,7 +329,7 @@ if __name__ == '__main__':
         "score_type": 'ASVHO',
         "filter_mode": 'AUX',
         "update_interval": 20,
-        "update_method": 'SCORE',
+        "update_method": 'SCORE_SVD',
         "historical_length": 10,
         "run": 0
     }

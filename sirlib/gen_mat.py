@@ -1,3 +1,4 @@
+""" generate matlab data file from experimental batch runs """
 from os import path
 import json
 import h5py
