@@ -7,3 +7,20 @@ My intent was to familiarize myself with Tensorflow and Python while at the same
 The bulk of the code can be found in the sirlib folder, it has a QT5 GUI interface for the batch runner and the single-job Heads-up-display style interface.
 
 This was fun!
+
+Tracker Monitor GUI
+------------------
+![](track-45.png)
+
+Batch Run Interface
+---------------
+![](batch-63.png)
+
+
+TensorFlow Graph
+----------------
+![](expanded_graph.png)
+
+Example of SVD generated template
+--------------------------
+![](svd_car4_example1.png)
